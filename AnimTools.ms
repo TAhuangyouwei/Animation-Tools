@@ -69,7 +69,9 @@ currentFolder = getFilenamePath (getThisScriptFilename())
 rulesScript = pathConfig.appendPath currentFolder "/FN_DeleteEmptyLayers.ms"  --删除空层
 fileIn rulesScript
 
-	
+currentFolder = getFilenamePath (getThisScriptFilename())
+rulesScript = pathConfig.appendPath currentFolder "/FN_解决脚本乱码的问题.ms"  --解决界面乱码问题
+fileIn rulesScript
 
 
 
@@ -216,6 +218,28 @@ rollout AniTools "动作工具"
 			fileIn rulesScript
 		)
 		
+		
+		button btRecoder "参考大师"  height:21 width:93 across:2
+		
+		on btRecoder pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/参考大师v1.06.mse"  --恢复蒙皮pose
+			fileIn rulesScript
+		)
+		
+		button btRepair "乱码修复Repair"  height:21 width:93 tooltip:"修复界面乱码问题"
+		
+		on btRepair pressed do
+		(
+			SetDefaultLanguageToChinese()
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/AnimTools.ms"  --FBX转Bip
+			fileIn rulesScript
+			
+		)			
+		
+		
 
 	)
 	group "绑定工具"
@@ -320,4 +344,4 @@ rollout AniTools "动作工具"
 
 	label Author "作者：HYW"
 )
-CreateDialog AniTools  240 800
+CreateDialog AniTools  240 635
