@@ -95,13 +95,14 @@ rollout AniTools "动作工具"
 		
 		button btClearMat "清除材质"  height:21 width:93  tooltip:"清除选择物体的材质或者所有物体的材质" across:2 --清理材质   
 		
-		button btClearScene "清理场景"   height:21 width:93
 		on btClearMat pressed do 
 		(
 			clearMaterials()
 		)
 		
-		on btClaearScene pressed do 
+		button btClearScene "清理场景"   height:21 width:93
+		
+		on btClearScene pressed do 
 		(
 			cleanScene()
 		)
