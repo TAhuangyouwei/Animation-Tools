@@ -55,8 +55,21 @@ rulesScript = pathConfig.appendPath currentFolder "/FN_CleanScene.ms"  --ÇåÀí³¡¾
 fileIn rulesScript
 	
 	
+currentFolder = getFilenamePath (getThisScriptFilename())
+rulesScript = pathConfig.appendPath currentFolder "/FN_CreateFloor.ms"  --´´½¨µØÃæ
+fileIn rulesScript
+	
+	
+currentFolder = getFilenamePath (getThisScriptFilename())
+rulesScript = pathConfig.appendPath currentFolder "/FN_Silhouette_Viewer.ms"  --²é¿´¼ôÓ°
+fileIn rulesScript
 
+	
+currentFolder = getFilenamePath (getThisScriptFilename())
+rulesScript = pathConfig.appendPath currentFolder "/FN_DeleteEmptyLayers.ms"  --É¾³ý¿Õ²ã
+fileIn rulesScript
 
+	
 
 
 
@@ -141,27 +154,125 @@ rollout AniTools "¶¯×÷¹¤¾ß"
 			fileIn rulesScript
 		)
 		
-		button btCucoloris "¼ôÓ°"
+		checkbutton cbt_click "¼ôÓ°" height:21 width:93 across: 2
 		
-		on btCucoloris pressed do 
+		on cbt_click changed state do
 		(
-			
+			Silhouette_Viewer()
+		)
+		button btFBXtoBip "FBX×ªBip" height:21 width:93 
+		
+		on btFBXtoBip pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/AutoFbxtoBip v1.4.mse"  --FBX×ªBip
+			fileIn rulesScript
+1
+		)
+		
+		Dropdownlist BoneColorList "¹Ç÷ÀÑÕÉ«ÁÐ±í" items:#("red-ÑÛ¾¦","green-È¹×Ó","blue-Í··¢","white-ÆäËü","black-Ä©¶Ë¹Ç","orange-ÎäÆ÷","yellow-Åû·ç","brown-Ðä×Ó","gray-ÐØ") selection:1 height:10 toolTip:"¹Ç÷À¿ÉÑ¡ÑÕÉ«ÁÐ±í"
+		
+		button BoneWireColor "È·ÈÏ" width:90
+		
+		on BoneWireColor pressed do 
+		(
+			case of 
+			(
+				(BoneColorList.selection == 1): $.wirecolor = red
+				
+				(BoneColorList.selection == 2): $.wirecolor = green
+				
+				(BoneColorList.selection == 3): $.wirecolor = blue
+				
+				(BoneColorList.selection == 4): $.wirecolor = white
+				
+				(BoneColorList.selection == 5): $.wirecolor = black
+				
+				(BoneColorList.selection == 6): $.wirecolor = orange
+				
+				(BoneColorList.selection == 7): $.wirecolor = yellow
+				
+				(BoneColorList.selection == 8): $.wirecolor = brown
+				
+				(BoneColorList.selection == 9): $.wirecolor = gray		
+			)		
+		)
+		
+		button btBoneDivider "¹Ç÷ÀÇÐ·Ö¹¤¾ß"  height:21 width:93 across:2
+		
+		on btBoneDivider pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/bonedivider.ms"  --FBX×ªBip
+			fileIn rulesScript
 		)
 
+		button btCopyTrans "¹ì¼£¿½±´" height:21 width:93  
+		
+		on btCopyTrans pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/¸´ÖÆÎïÌåÔË¶¯¹ì¼£.ms"  --FBX×ªBip
+			fileIn rulesScript
+		)
 		
 
 	)
-	group "¹Ç÷À¹¤¾ß"
+	group "°ó¶¨¹¤¾ß"
 	(
-		button btObjLayer "µ÷Õû²ã¼¶" tooltip:"°Ñ²»Í¬ÊôÐÔµÄÎïÌå·ÅÈë²»Í¬µÄ²ã¼¶"   across:2
+		button btObjLayer "µ÷Õû²ã¼¶" height:21 width:93 across: 2  tooltip:"°Ñ²»Í¬ÊôÐÔµÄÎïÌå·ÅÈë²»Í¬µÄ²ã¼¶"   across:2
 		
 		on btObjlayer pressed do AddObjectsToLayer()
 		
-		button reNameNub "ÃüÃûÄ©¶Ë" tooltip:"bone¹Ç÷ÀÄ©¶Ë¹ÇÖØÃüÃû"
+		button reNameNub "ÃüÃûÄ©¶Ë" height:21 width:93 tooltip:"bone¹Ç÷ÀÄ©¶Ë¹ÇÖØÃüÃû"
 		on reNameNub pressed do 
 		(
 			RenameBoneNub()
 		)
+		
+		button bt_resetSkinPose "»Ö¸´ÃÉÆ¤pose" height:21 width:93 across: 2  tooltip:"»Ö¸´µ½Tpose"
+		
+		on bt_resetSkinPose pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/ÖØÖÃÃÉÆ¤pose V1.1.mse"  --»Ö¸´ÃÉÆ¤pose
+			fileIn rulesScript
+		)
+		button bt_CombineSkin "ÃÉÆ¤²ð·ÖºÏ²¢"  height:21 width:93   tooltip:"ºÏ²¢Ê±Ã¿´ÎÑ¡ÔñÁ½¸öÎïÌå"
+		
+		on bt_CombineSkin pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/Rigging_CombineSkin.ms"  --ÃÉÆ¤²ð·ÖºÏ²¢
+			fileIn rulesScript
+		)
+		
+		button bt_facialRig  "±íÇé°ó¶¨"  height:21 width:93  across:2  tooltip:"±íÇé°ó¶¨¹¤¾ß"
+		
+		on bt_facialRig pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/facialRigDemo.ms"  --ÃÉÆ¤²ð·ÖºÏ²¢
+			fileIn rulesScript
+		)
+		
+		button bt_bodylRig  "ÉíÌå°ó¶¨"  height:21 width:93    tooltip:"ÉíÌå°ó¶¨¹¤¾ß"
+		
+		on bt_bodylRig pressed do 
+		(
+			currentFolder = getFilenamePath (getThisScriptFilename())
+			rulesScript = pathConfig.appendPath currentFolder "/×Ô¶¨Òå¹Ç÷À°ó¶¨.ms"  --ÃÉÆ¤²ð·ÖºÏ²¢
+			fileIn rulesScript
+		)
+		
+		
+		
+		button bt_clearNullLayer "ÇåÀí¿Õ²ã"
+		on bt_clearNullLayer pressed do 
+		(
+			DeleteEmptyLayers()
+		)
+		
 	)
 	
 	group "biped"
@@ -196,7 +307,17 @@ rollout AniTools "¶¯×÷¹¤¾ß"
 		)
 	) 
 	
+	group "²Î¿¼¹¤¾ß"
+	(
+		button bt_wh "¹¤¾ßÊéÄ¿Â¼" height:21 width:93   tooltip:"ÊÊÓÃÓÚmax2008Ö®Ç°µÄ°æ±¾"  --across: 2
+		
+		on bt_wh pressed do 
+		(
+			currentFolder = @"D:\maxscript\maxscript help"
+			ShellLaunch currentFolder ""
+		)
+	)
 
 	label Author "×÷Õß£ºHYW"
 )
-CreateDialog AniTools  240 400
+CreateDialog AniTools  240 800

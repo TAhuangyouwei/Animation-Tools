@@ -1,5 +1,6 @@
 fn ResetMaterialsOfModel =   --重置模型材质
 (
+	envPath = getdir #defaults + "temp.env"
 	if selection.count ==0 then 
 	(
 		targetModel = for obj in objects where classof obj.baseobject ==Editable_Poly and obj.faces.count != 0 collect obj
@@ -20,14 +21,7 @@ fn ResetMaterialsOfModel =   --重置模型材质
 				sliderTime = 0
 				boneArr = skinOps.GetBoneNodes targetModel[i].skin
 				
-				if (isDirectoryWriteable "E:\\skin") then 
-						skinOps.SaveEnvelope targetModel[i].modifiers[#Skin] "E:\\skin\\temp.env"
-					else 
-					(
-						makeDir "E:\\skin" all:true 
-						skinOps.SaveEnvelope targetModel[i].modifiers[#Skin] "E:\\skin\\temp.env"
-					)
-				
+				skinOps.SaveEnvelope targetModel[i].modifiers[#Skin] envPath
 				
 				for j = 1 to targetModel[i].modifiers.count do collapseStack targetModel[i]
 				tempName = copy targetModel[i].name 
@@ -45,7 +39,7 @@ fn ResetMaterialsOfModel =   --重置模型材质
 						skinOps.addbone tempModel.modifiers[#Skin] boneArr[i] 0
 				)
 				
-				skinOps.loadEnvelope tempModel.modifiers[#Skin] "E:\\skin\\temp.env"
+				skinOps.loadEnvelope tempModel.modifiers[#Skin] envPath
 				tempModel.modifiers[#Skin].bone_Limit =4
 				
 			)
@@ -73,11 +67,11 @@ fn ResetMaterialsOfModel =   --重置模型材质
 				boneArr = skinOps.GetBoneNodes targetModel[i].skin
 				
 				if (isDirectoryWriteable "E:\\skin") then 
-						skinOps.SaveEnvelope targetModel[i].modifiers[#Skin] "E:\\skin\\temp.env"
+						skinOps.SaveEnvelope targetModel[i].modifiers[#Skin] envPath
 					else 
 					(
 						makeDir "E:\\skin" all:true 
-						skinOps.SaveEnvelope targetModel[i].modifiers[#Skin] "E:\\skin\\temp.env"
+						skinOps.SaveEnvelope targetModel[i].modifiers[#Skin] envPath
 					)
 				
 				
@@ -97,7 +91,7 @@ fn ResetMaterialsOfModel =   --重置模型材质
 						skinOps.addbone tempModel.modifiers[#Skin] boneArr[i] 0
 				)
 				
-				skinOps.loadEnvelope tempModel.modifiers[#Skin] "E:\\skin\\temp.env"
+				skinOps.loadEnvelope tempModel.modifiers[#Skin] envPath
 				tempModel.modifiers[#Skin].bone_Limit =4
 				
 			)
