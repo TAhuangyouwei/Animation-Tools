@@ -41,7 +41,7 @@ fn scaleCheck =
 	for obj in objects where classof obj.baseobject == Editable_Poly do
 	(
 		
-		if obj.scale != [1,1,1] then 
+		if abs(obj.scale.x - 1) > e^-5 or abs(obj.scale.x - 1) > e^-5  or abs(obj.scale.x - 1) > e^-5  then 
 		(
 			append tempScale obj 
 			
