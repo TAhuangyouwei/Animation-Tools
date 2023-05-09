@@ -75,7 +75,7 @@ fileIn rulesScript
 
 	
 currentFolder = getFilenamePath (getThisScriptFilename())
-rulesScript = pathConfig.appendPath currentFolder "/FN_RotatePivotOnly.ms"  --解决界面乱码问题
+rulesScript = pathConfig.appendPath currentFolder "/FN_RotatePivotOnly.ms"  --旋转坐标轴的方法
 fileIn rulesScript
 
 try (DestroyDialog AniTools ) catch ()
@@ -269,14 +269,23 @@ rollout AniTools "动作工具"
 	)
 	group "绑定工具"
 	(
-		button btObjLayer "调整层级" height:21 width:93 across: 2  tooltip:"把不同属性的物体放入不同的层级"   across:2
+		button btObjLayer "调整层级" height:21 width:93 across: 2  tooltip:"把不同属性的物体放入不同的层级,左键普通分层，右键表情绑定分层"   across:2
 		
-		on btObjlayer pressed do AddObjectsToLayer()
-		
-		button reNameNub "命名末端" height:21 width:93 tooltip:"bone骨骼末端骨重命名"
-		on reNameNub pressed do 
+		on btObjlayer pressed do 
 		(
-			RenameBoneNub()
+			AddObjectsToLayer()
+			DeleteEmptyLayers()
+		)
+		on btObjlayer rightClick do 
+		(
+			AddObjectsToLayer_Face()
+			DeleteEmptyLayers()
+		)
+		
+		button bt_clearNullLayer "清理空层"  height:21 width:93
+		on bt_clearNullLayer pressed do 
+		(
+			DeleteEmptyLayers()
 		)
 		
 		button bt_resetSkinPose "恢复蒙皮pose" height:21 width:93 across: 2  tooltip:"恢复到Tpose"
@@ -314,13 +323,14 @@ rollout AniTools "动作工具"
 			fileIn rulesScript
 		)
 		
-		
-		
-		button bt_clearNullLayer "清理空层"
-		on bt_clearNullLayer pressed do 
+		button reNameNub "命名末端" height:21 width:93 tooltip:"bone骨骼末端骨重命名"
+		on reNameNub pressed do 
 		(
-			DeleteEmptyLayers()
+			RenameBoneNub()
 		)
+		
+		
+
 		
 	)
 	
