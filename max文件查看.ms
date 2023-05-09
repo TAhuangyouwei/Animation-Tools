@@ -9,7 +9,7 @@ rollout modelView "资源查看"
 	listbox maxList "max文件列表" items:#() selection:1 height:1  tooltip:"左键双击打开文件,右键单击打开选择的文件夹"
 	label author "Author:HYW"
 
-	global maxfiles
+	global maxfiles = #()
 	global maxListItems = #()
 	global sequences
 	
@@ -63,7 +63,7 @@ rollout modelView "资源查看"
 
 		
 		maxList.items = maxListItems
-		if maxListItems.count < 30 and maxListItems.count > 1 then 
+		if maxListItems.count < 30 and maxListItems.count > 0 then 
 		(
 			maxList.height = (maxListItems.count-1)*13 + 19	
 			modelView.height = 105 + (maxListItems.count - 1)*13
