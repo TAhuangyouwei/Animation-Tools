@@ -73,7 +73,10 @@ currentFolder = getFilenamePath (getThisScriptFilename())
 rulesScript = pathConfig.appendPath currentFolder "/FN_解决脚本乱码的问题.ms"  --解决界面乱码问题
 fileIn rulesScript
 
-
+	
+currentFolder = getFilenamePath (getThisScriptFilename())
+rulesScript = pathConfig.appendPath currentFolder "/FN_RotatePivotOnly.ms"  --解决界面乱码问题
+fileIn rulesScript
 
 try (DestroyDialog AniTools ) catch ()
 rollout AniTools "动作工具"
@@ -118,7 +121,28 @@ rollout AniTools "动作工具"
 		on bt_check pressed do 
 		( 
 
-			standardCheck()
+			mapChannelNum() --检查模型贴图通道数量
+			unitCheck()		--检查场景单位
+			scaleCheck()	--检查模型是否有缩放
+			objAxis() 		--检查模型轴向是否Y轴向上
+		)
+		
+		button btY_Up "Y轴向上" 
+		on btY_Up pressed do 
+		(
+			if selection.count == 0 then 
+			(
+				for obj in objects where classof obj.baseobject == Editable_Poly do 
+					if obj.rotation == (quat 0 0 0 1) then  RotatePivotOnly obj (EulerAngles 90 0 0)  --旋转Y轴
+			)
+			else 
+			(
+				for obj in selection where classof obj.baseobject == Editable_Poly do 
+					if obj.rotation == (quat 0 0 0 1) then  RotatePivotOnly obj (EulerAngles 90 0 0)  --旋转Y轴
+				
+			)
+			
+			
 		)
 	)
 	

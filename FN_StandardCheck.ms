@@ -72,9 +72,14 @@ fn objAxis =   --检查模型轴向是否Y轴向上
 		)
 		else if obj.position != [0,0,0] then 
 		(
-			if abs (obj.position.x) <0.0001 or abs (obj.position.y )<0.0001 or abs (obj.position.z) <0.0001 then 
-				obj.position =[0,0,0]
-			else 
+			
+			if abs (obj.position.x) <0.0001  then 
+				obj.position.x =0
+			else if abs (obj.position.y) <0.0001  then 
+				obj.position.y =0
+			else if abs (obj.position.z) <0.0001  then 
+				obj.position.z =0
+			else
 				append tempAxis obj 
 		
 		)
@@ -90,12 +95,3 @@ fn objAxis =   --检查模型轴向是否Y轴向上
 	)
 )
 
-
-fn standardCheck =
-(
-			mapChannelNum() --检查模型贴图通道数量
-			unitCheck()		--检查场景单位
-			scaleCheck()	--检查模型是否有缩放
-			objAxis() 		--检查模型轴向是否Y轴向上
-	
-)
