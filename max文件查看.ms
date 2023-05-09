@@ -39,9 +39,6 @@ rollout modelView "资源查看"
 				(
 					append maxListItems (folderName + "\t==>\t" + getFilenameFile(maxfiles[i]))
 					append sequences i
-					print "aaaaaaaaaaaaaa"		
-					print sequences		
-					print "bbbbbbbbbbbbbbbbbbbbb"
 					
 				)
 			)
