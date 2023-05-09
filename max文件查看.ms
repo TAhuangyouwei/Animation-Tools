@@ -10,7 +10,8 @@ rollout modelView "资源查看"
 	label author "Author:HYW"
 
 	global maxfiles
-	global maxListItems
+	global maxListItems = #()
+	global sequences
 	
 	on edittext_openFolderPath entered txt do 
 	(
@@ -18,6 +19,7 @@ rollout modelView "资源查看"
 		maxopenpath = trimleft maxopenpath
 		maxopenpath = trimRight maxopenpath	
 		maxfiles = getFiles maxopenpath	recurse:true 
+		sequences = #()  --用于存储文件序列号，方便右键打开对应文件夹
 		allwords = edittext_filt.text
 		keyWords = filterString allwords "， -"
 		
@@ -34,55 +36,28 @@ rollout modelView "资源查看"
 			else if keyWords.count ==1 then 
 			(
 				if findString maxfiles[i] keyWords[1] != undefined then 
+				(
 					append maxListItems (folderName + "\t==>\t" + getFilenameFile(maxfiles[i]))
-						
+					append sequences i
+					print "aaaaaaaaaaaaaa"		
+					print sequences		
+					print "bbbbbbbbbbbbbbbbbbbbb"
+					
+				)
 			)
 			else if keyWords.count >=2 then
 			(
+				
 				for j = 1 to keyWords.count do 
 				(
 					if findString maxfiles[i] keyWords[j] != undefined then 
 					(
 						append maxListItems (folderName + "\t==>\t" + getFilenameFile(maxfiles[i]))
+						append sequences i
 						
 					)
 				)
 --目前仅支持关键词取或，不支持取并
--- 	else 
--- 	(
--- 		tempItems = #()
--- 		for j = 1 to keyWords.count do 
--- 		(
--- 			if j == 1 then 
--- 			(
--- 					if findString maxfiles[i] keyWords[j] != undefined then 
--- 					(
--- 						append tempItems (folderName + "\t==>\t" + getFilenameFile(maxfiles[i]))
--- 						
--- 					)
--- 					else append tempItems ""
--- 			)
--- 			else 
--- 			(
--- 				maxListItems = tempItems
--- 				tempItems = #()
--- 				if findString maxListItems[i] keyWords[j] != undefined then 
--- 				(
--- 					append tempItems (folderName + "\t==>\t" + getFilenameFile(maxListItems[i]))
--- 					
--- 				)
--- 				else append tempItems ""
--- 			)
-
--- 		)
--- 			maxListItems = makeUniqueArray  maxListItems 
-
--- 			tempN = findItem  maxListItems ""
--- 			print tempN
--- 			if tempN !=0 then deleteItem maxListItems tempN
--- 		
--- 	)
-
 				
 			)
 			
@@ -134,8 +109,10 @@ rollout modelView "资源查看"
 	
 	on maxList rightClick itm do 
 	(	
+		n1 = maxList.selection
+		num = sequences[n1]
 -- 		pathConfig.getCurrentProjectFolder()   知识点
-		ShellLaunch (getFilenamePath(maxfiles[maxList.selection])) ""
+		ShellLaunch (getFilenamePath(maxfiles[num])) ""
 	)
 		
 	on clearEdit pressed do 
