@@ -1,317 +1,358 @@
+-- 尝试销毁已存在的对话框以避免重复
+try(DestroyDialog SkinCombineTool)catch()
+
+-- 定义主要的界面和功能
+rollout SkinCombineTool "Skin Combiner"
 (
-	rollout SkinCombineTool "Skin Combiner"
+	-- 界面按钮定义
+    button btnCombineSkin "Combine Skin" align:#center width:120
+    button btnDetachSkin "Detach Skin" align:#center width:120
+	
+	-- 创建必要的局部变量
+	local createms
+	
+	-- 存储常用函数以提高循环中的性能
+	local p_getNumFaces = polyop.getNumFaces
+	local p_getElementsUsingFace = polyop.getElementsUsingFace
+	local p_getVertsUsingFace = polyop.getVertsUsingFace
+	local p_deleteFaces = polyop.deleteFaces
+	local m_cloneNodes = maxOps.cloneNodes
+	local GetVertexWeightCount = skinOps.GetVertexWeightCount
+	local GetVertexWeight = skinOps.GetVertexWeight
+	local GetVertexWeightBoneID = skinOps.GetVertexWeightBoneID
+	local GetNumberVertices = skinOps.GetNumberVertices
+	local ReplaceVertexWeights = skinOps.ReplaceVertexWeights
+	local SelectVertices = skinOps.SelectVertices
+	local BakeSelectedVerts = skinOps.bakeSelectedVerts
+	local RemoveZeroWeights = skinOps.RemoveZeroWeights
+	local isWeightToolOpen = skinOps.isWeightToolOpen
+	local closeWeightTool = skinOps.closeWeightTool
+	local GetBoneName =skinOps.GetBoneName
+	local GetNumberBones = skinOps.GetNumberBones
+	local addbone = skinOps.addbone
+	local invalidate = skinOps.invalidate
+	
+	-- 获取给定对象的所有元素
+	fn getAllElements obj =
 	(
-		button btnCombineSkin "Combine Skin" align:#center width:120
-		button btnDetachSkin "Detach Skin" align:#center width:120
-		--button combineSkinHelp "?" align:#center
-		
-		local createms
-		
-		--STORING FUNCTIONS WILL MAKE THEM FASTER IN LOOPS
-		local p_getNumFaces = polyop.getNumFaces
-		local p_getElementsUsingFace = polyop.getElementsUsingFace
-		local p_getVertsUsingFace = polyop.getVertsUsingFace
-		local p_deleteFaces = polyop.deleteFaces
-		local m_cloneNodes = maxOps.cloneNodes
-		local GetVertexWeightCount = skinOps.GetVertexWeightCount
-		local GetVertexWeight = skinOps.GetVertexWeight
-		local GetVertexWeightBoneID = skinOps.GetVertexWeightBoneID
-		local GetNumberVertices = skinOps.GetNumberVertices
-		local ReplaceVertexWeights = skinOps.ReplaceVertexWeights
-		local SelectVertices = skinOps.SelectVertices
-		local BakeSelectedVerts = skinOps.bakeSelectedVerts
-		local RemoveZeroWeights = skinOps.RemoveZeroWeights
-		local isWeightToolOpen = skinOps.isWeightToolOpen
-		local closeWeightTool = skinOps.closeWeightTool
-		local GetBoneName =skinOps.GetBoneName
-		local GetNumberBones = skinOps.GetNumberBones
-		local addbone = skinOps.addbone
-		local invalidate = skinOps.invalidate
+		local elementList = #()
+		local faceCount = polyop.getNumFaces obj
+		local unprocessedFaces = #{1..faceCount}
 
-		--GETS ALL THE ELEMENTS IN AN OBJECT, RETURNS AN ARRAY of BITARRAYS
-		--GETS THE INVERSE ELEMENTS, TO MAKE IT EASIER TO DELETE THE REST OF THE ELEMENTS
-		fn getAllElements obj =
+		while not unprocessedFaces.isEmpty do
 		(
-			local faceArray,liveArray,elementList,faceCount
-
-			elementList = #()
-
-			faceCount = p_getNumFaces obj
-
-			faceArray = #{1..faceCount}
-			liveArray = #{1..faceCount}
-
-			while not liveArray.isEmpty do
+			local seedFace = undefined
+			for f in unprocessedFaces do
 			(
-				currentArray = liveArray as array
-				newElement = p_getElementsUsingFace obj (currentArray[currentArray.count])
-				append elementList (faceArray-newElement)
-				liveArray = liveArray - newElement
-				--format "LiveArray: %\n\tnewElement: %\n" liveArray newElement
+				seedFace = f
+				break
 			)
-
-			elementList
+			
+			local newElement = polyop.getElementsUsingFace obj seedFace
+			append elementList newElement
+			unprocessedFaces -= newElement
 		)
 
-		fn detachElementsWithSkin obj =
-		(
-			elementsArray = getAllElements obj
-
-			--BAKE AND REMOVE ZERO WEIGHTS ON THE SKIN
-			objSkin = obj.skin
-			modPanel.setCurrentObject objSkin
-			SelectVertices objSkin (GetNumberVertices objSkin)
-			bakeSelectedVerts objSkin
-			objSkin.clearZeroLimit = 0.0
-			RemoveZeroWeights objSkin
-
-			--CREATE A BIT ARRAY TO INVERT FOR THE VERTICES
-			faceCount = p_getNumFaces obj
-			faceArray = #{1..faceCount}
-
-			--STORE THE VERTEX WEIGHTS
-			vertWeightsArray = #()
-
-			for ele in elementsArray do
-			(
-				verts = p_getVertsUsingFace obj (faceArray - ele)
-				vertsEle = #()
-
-				for v in verts do
-				(
-					weights = #()
-					_bones = #()
-
-					wc = GetVertexWeightCount objSkin v
-
-					for b = 1 to wc do
-					(
-						append weights (GetVertexWeight objSkin v b)
-						append _bones (GetVertexWeightBoneID objSkin v b)
-					)
-
-					--format "Bones: %\nWeigths: %\n" _bones weights
-
-					append vertsEle #(_bones,weights)
-				)
-
-				append vertWeightsArray vertsEle
-
-			)
-
-			--format "%\n" vertWeightsArray
-
-			--CLONE AND FIX THE SKIN WEIGHTS
-			for i = 1 to elementsArray.count do
-			(
-				--DUPE THE OBJECT
-				m_cloneNodes obj newNodes:&newObjs
-				p_deleteFaces newObjs[1] elementsArray[i]
-
-				newObjSkin = newObjs[1].skin
-
-				modPanel.setCurrentObject newObjSkin
-
-				--LOAD THE VERTEX WEIGHTS
-				vCount = (GetNumberVertices newObjSkin)
-				--print vCount
-
-				for v = 1 to vCount do
-				(
-					ReplaceVertexWeights newObjSkin v vertWeightsArray[i][v][1] vertWeightsArray[i][v][2]
-					--format "Skin: %\nV: %\nWeights: %\nBones: %\n" newObjSkin v vertWeightsArray[i][v][1] vertWeightsArray[i][v][2]
-				)
-			)
-
-			delete obj
-		)
-		
-		fn combineSkin = 
-		(
-			clearlistener()
-			max modify mode
-			
-			--INIT SOME VARIABLES
-			local proceed = true
-			local selObjs = getCurrentSelection()
-			local selCount = selObjs.count
-			
-			--BONENAMEARRAY
-			local NameArray = #()
-			
-			--ERROR CHECK
-			if selection.count <= 1 do proceed = false
-			for obj in selObjs while proceed == true do
-			(
-				if not isProperty obj #skin do
-				(
-					
-					proceed = false
-				)
-			)
-			
-			if proceed do
-			(
-				--SAVE WEIGHTS
-				createms = "" as stringstream
-				local totalVerts = 0
-				
-				for obj in selObjs do
-				(
-					modPanel.setCurrentObject obj.skin
-					
-					if InstanceMgr.CanMakeModifiersUnique obj obj.skin do
-					(
-						InstanceMgr.MakeModifiersUnique obj obj.skin #individual
-						invalidate obj.skin
-					)
-					
-					local sk = obj.skin
-					modPanel.setCurrentObject sk
-					
-					local bCount = GetNumberBones sk
-					
-					for b = 1 to bCount do
-					(
-						appendifUnique NameArray (GetBoneName sk b 1)
-					)
-					
-					sort NameArray
-					
-					skinCount = GetNumberVertices sk
-					
-					sk.clearZeroLimit = 0.0
-					RemoveZeroWeights sk
-					
-					for v = 1 to skinCount do
-					(
-						weights = #()
-						_bones = #()
-						
-						weightCount = GetVertexWeightCount sk v
-			
-						for b = 1 to weightCount do
-						(
-							weight = GetVertexWeight sk v b
-							_boneID = GetVertexWeightBoneID sk v b
-							_bone = GetBoneName sk _boneID 1
-							--_bone = "$'" + _bone + "'"	
-								
-							if weight != 0 do
-							(
-								append weights weight
-								append _bones _bone
-							)
-						)
-						
-						--ADDING TOTAL VERTS MODIFIES THE VERTEX NUMBERS AS WE SAVE
-						format "%\n%\n%\n" (v+totalVerts) weights _bones to:createms
-					)
-					
-					totalVerts += skinCount
-				)
-				
-				--COMBINE OBJECTS, VERT ORDER SHOULD CORESPOND TO SELECTION ORDER
-				convertTo selObjs Editable_Poly
-				local newObj = selObjs[1]
-				select newObj
-				
-				for obj in selObjs where obj != newObj do
-				(
-					newObj.EditablePoly.attach obj newObj
-				)
-
-				--ADD A NEW SKIN MOD
-				local newSkin = Skin()
-				addmodifier newObj newSkin
-				
-				newSkin.filter_cross_sections = off
-				newSkin.filter_vertices = on
-				newSkin.showNoEnvelopes = on
-				newSkin.wt_showGlobal = on
-				newSkin.wt_activeVertexSet = 1
-				newSkin.wt_showAffectedBones = on
-				
-				for i = 1 to NameArray.count do
-				(
-					addbone newSkin (getNodeByName NameArray[i]) 1
-				)
-				
-				completeredraw()
-
-				--GO TO THE BEGINING OF THE STREAM STREAM, AND COLLECT THE BONES
-				seek createms 0
-				
-				--LOAD THE WEIGHTS
-				while not eof createms do
-				(
-					boneIDarray = #()
-					
-					a = execute(readline createms)
-					b = execute(readline createms)
-					c = execute(readline createms)
-					
-					local bCount = c.count
-					
-					for i = 1 to bCount do
-					(
-						local BoneID = findItem NameArray c[i]
-						
-						if BoneID != 0 do
-						(
-							append boneIDarray BoneID
-						)
-					)
-						
-					ReplaceVertexWeights newSkin a boneIDarray b
-				)
-				
-				--ns = newScript()
-				--format "%\n" (createms as string) to:ns
-			)
-		)
-		
-		on combineSkinHelp pressed do messagebox  "Select several skinned meshes and this tool will combine them into one object and skin modifier." Title:"Help"
-
-		on btnCombineSkin pressed do
-		(
-			--windows.sendmessage (windows.getmaxhwnd()) 0x000B 0 1
-			
-			--t = timeStamp()
-				
-			try(combineSkin())
-			catch(format "\%n" (getcurrentexception()))
-				
-			--format "%\n" (t-timeStamp())
-				
-			--windows.sendmessage (windows.getmaxhwnd()) 0x000B 1 1
-		)
-
-		
-		on btnDetachSkin pressed do
-		(
-			escapeEnable = true
-			clearListener()
-			holdMaxFile()
-
-			processObjs = getCurrentSelection()
-
-			windows.sendmessage (windows.getmaxhwnd()) 0x000B 0 1
-
-			--ts = timeStamp()
-			for obj in processObjs do with redraw off
-			(
-				try(detachElementsWithSkin obj)
-				catch(format "Object: % failed to process. Could be frozen or hidden.\n" obj.name)
-			)
-			--format "%\n" (timeStamp()-ts)
-
-			clearselection()
-
-			windows.sendmessage (windows.getmaxhwnd()) 0x000B 1 1
-		)
-
+		elementList
 	)
 
-	createDialog SkinCombineTool
+
+	-- 烘焙并清理指定皮肤修饰符的权重
+	fn bakeAndCleanSkinWeights objSkin =
+	(
+		modPanel.setCurrentObject objSkin
+		SelectVertices objSkin (GetNumberVertices objSkin)
+		bakeSelectedVerts objSkin
+		objSkin.clearZeroLimit = 0.0
+		RemoveZeroWeights objSkin
+	)
+
+	-- 存储指定皮肤修饰符的顶点权重
+	fn storeVertexWeights objSkin faceArray element =
+	(
+		local vertWeights = #()
+		local verts = p_getVertsUsingFace obj (faceArray - element)
+
+		for v in verts do
+		(
+			local weights = #()
+			local bones = #()
+			local wc = GetVertexWeightCount objSkin v
+
+			for b = 1 to wc do
+			(
+				append weights (GetVertexWeight objSkin v b)
+				append bones (GetVertexWeightBoneID objSkin v b)
+			)
+
+			append vertWeights #(bones, weights)
+		)
+
+		vertWeights
+	)
+
+
+	-- 克隆对象并修正权重
+	fn cloneAndFixWeights obj elementWeights element =
+	(
+		m_cloneNodes obj newNodes:&newObjs
+		p_deleteFaces newObjs[1] element
+
+		local newObjSkin = newObjs[1].skin
+		modPanel.setCurrentObject newObjSkin
+		local vCount = GetNumberVertices newObjSkin
+
+		for v = 1 to vCount do
+		(
+			ReplaceVertexWeights newObjSkin v elementWeights[v][1] elementWeights[v][2]
+		)
+	)
+
+
+
+	-- 分离具有皮肤修饰符的对象
+	fn detachElementsWithSkin obj =
+	(
+		elementsArray = getAllElements obj
+		bakeAndCleanSkinWeights obj.skin
+
+		local faceCount = p_getNumFaces obj
+		local faceArray = #{1..faceCount}
+		local vertWeightsArray = #()
+
+		for ele in elementsArray do
+		(
+			append vertWeightsArray (storeVertexWeights obj.skin faceArray ele)
+		)
+
+		for i = 1 to elementsArray.count do
+		(
+			cloneAndFixWeights obj vertWeightsArray[i] elementsArray[i]
+		)
+
+		delete obj
+	)
+
+
+	-- 检查所选对象并准备处理
+	fn checkAndPrepare selObjs =
+	(
+		local proceed = true
+
+		if selection.count <= 1 do proceed = false
+		for obj in selObjs while proceed do
+		(
+			if not isProperty obj #skin do proceed = false
+		)
+
+		proceed
+	)
+
+
+	-- 保存所选对象的权重信息
+	fn saveWeights selObjs =
+	(
+		local createms = "" as stringstream
+		local totalVerts = 0
+		local NameArray = #()
+
+		for obj in selObjs do
+		(
+			modPanel.setCurrentObject obj.skin
+
+			if InstanceMgr.CanMakeModifiersUnique obj obj.skin do
+			(
+				InstanceMgr.MakeModifiersUnique obj obj.skin #individual
+				invalidate obj.skin
+			)
+			
+			local sk = obj.skin
+			modPanel.setCurrentObject sk
+			
+			local bCount = GetNumberBones sk
+			
+			for b = 1 to bCount do
+			(
+				appendifUnique NameArray (GetBoneName sk b 1)
+			)
+			
+			sort NameArray
+			
+			local skinCount = GetNumberVertices sk
+			
+			sk.clearZeroLimit = 0.0
+			RemoveZeroWeights sk
+			
+			for v = 1 to skinCount do
+			(
+				local weights = #()
+				local bones = #()
+				
+				local weightCount = GetVertexWeightCount sk v
+
+				for b = 1 to weightCount do
+				(
+					local weight = GetVertexWeight sk v b
+					local boneID = GetVertexWeightBoneID sk v b
+					local bone = GetBoneName sk boneID 1
+					 
+					if weight != 0 do
+					(
+						append weights weight
+						append bones bone
+					)
+				)
+				
+				-- ADDING TOTAL VERTS MODIFIES THE VERTEX NUMBERS AS WE SAVE
+				format "%\n%\n%\n" (v+totalVerts) weights bones to:createms
+			)
+			
+			totalVerts += skinCount
+		)
+
+		return #(createms, NameArray, totalVerts)
+	)
+
+
+
+	-- 合并所选对象
+	fn mergeObjects selObjs =
+	(
+		convertTo selObjs Editable_Poly
+		local newObj = selObjs[1]
+		select newObj
+
+		for obj in selObjs where obj != newObj do
+		(
+			newObj.EditablePoly.attach obj newObj
+		)
+
+		newObj
+	)
+
+
+	-- 添加并配置新的皮肤修饰符
+	fn addAndConfigureSkinModifier newObj NameArray =
+	(
+		local newSkin = Skin()
+		addModifier newObj newSkin
+		
+		newSkin.filter_cross_sections = off
+		newSkin.filter_vertices = on
+		newSkin.showNoEnvelopes = on
+		newSkin.wt_showGlobal = on
+		newSkin.wt_activeVertexSet = 1
+		newSkin.wt_showAffectedBones = on
+
+		-- 添加骨骼到皮肤修饰符
+		for boneName in NameArray do
+		(
+			local boneNode = getNodeByName boneName
+			if boneNode != undefined do
+			(
+				addBone newSkin boneNode 1
+			)
+		)
+
+		newSkin
+	)
+
+
+
+
+	-- 从数据流中加载权重信息
+	fn loadWeights newSkin createms NameArray =
+	(
+		seek createms 0  -- 将流的位置重置到开始
+
+		while not eof createms do
+		(
+			local boneIDarray = #()
+			local vertexIndex = execute (readline createms)
+			local weights = execute (readline createms)
+			local boneNames = execute (readline createms)
+
+			for boneName in boneNames do
+			(
+				local BoneID = findItem NameArray boneName
+				if BoneID != 0 do
+				(
+					append boneIDarray BoneID
+				)
+			)
+			
+			ReplaceVertexWeights newSkin vertexIndex boneIDarray weights
+		)
+	)
+
+
+
+	-- 组合皮肤的主要功能
+	fn combineSkin = 
+	(
+		clearlistener()
+		max modify mode
+
+		local selObjs = getCurrentSelection()
+
+		if checkAndPrepare selObjs do
+		(
+			local createms, NameArray, totalVerts = saveWeights selObjs
+			local newObj = mergeObjects selObjs
+			local newSkin = addAndConfigureSkinModifier newObj NameArray
+			loadWeights newSkin createms NameArray
+		)
+	)
+		
+	
+	
+	
+	
+	
+    
+    -- 组合皮肤按钮的动作
+    fn combineAction =
+    (
+        try
+        (
+            combineSkin()
+        )
+        catch
+        (
+            format "Error during combining skins: %\n" (getcurrentexception())
+        )
+    )
+	
+	
+	
+    -- 分离皮肤按钮的动作
+    fn detachAction =
+    (
+        escapeEnable = true
+        clearListener()
+        holdMaxFile()
+
+        local processObjs = getCurrentSelection()
+        for obj in processObjs do with redraw off
+        (
+            try
+            (
+                detachElementsWithSkin obj
+            )
+            catch
+            (
+                format "Object: % failed to process. Could be frozen or hidden.\n" obj.name
+            )
+        )
+        clearselection()
+    )
+
+	-- 按钮事件处理
+    on btnCombineSkin pressed do combineAction()
+    on btnDetachSkin pressed do detachAction()
 )
+
+createDialog SkinCombineTool
+
+
+

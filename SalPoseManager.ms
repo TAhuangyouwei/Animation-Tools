@@ -338,7 +338,7 @@ fn createCameraFromView =
 (
 max vpt persp user
 cams1=cameras as array
-macros.run "Lights and Cameras" "Camera_CreateFromView"
+macros.run "Lights and Cameras" "StandardCamera_CreateFromView"
 cams2=cameras as array
 for i =1 to (cams2.count - 2) do
 	deleteItem cams2 1
@@ -861,7 +861,7 @@ if obj != undefined then
 	(
 	max vpt persp user
 	cams1=cameras as array
-	macros.run "Lights and Cameras" "Camera_CreateFromView"
+	macros.run "Lights and Cameras" "StandardCamera_CreateFromView"
 	cams2=cameras as array
 	for i =1 to (cams2.count - 2) do
 		deleteItem cams2 1
@@ -882,7 +882,7 @@ fn SetCameraPos obj poses =
 -- poses=GetCameraPos obj
 max vpt persp user
 cams1=cameras as array
-macros.run "Lights and Cameras" "Camera_CreateFromView"
+macros.run "Lights and Cameras" "StandardCamera_CreateFromView"
 cams2=cameras as array
 for i =1 to (cams2.count - 2) do
 	deleteItem cams2 1
