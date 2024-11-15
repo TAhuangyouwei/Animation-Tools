@@ -1256,31 +1256,6 @@ rollout modelView "资源查看"
 			(
 			loadMaxFile maxfiles[maxList.selection] useFileUnits:true  quiet:true 
 			
-			vp_visible = ViewPanelManager.IsViewPanelVisible 2
--- 			浮动窗口
-			if vp_visible then 
-			(
-				ViewPanelManager.SetActiveViewPanel 2
-				viewport.setType #view_front
-				max tool zoomextents all
-				disp = NitrousGraphicsManager.GetActiveViewportSetting() 
-				disp.VisualStyleMode = #ConsistentColors 
-				ViewPanelManager.SetActiveViewPanel 1
-			)
-			else
-			(
-				vp_id = #Floating_ViewPanel_1
-				ViewPanelManager.SetFloatingViewPanelVisibility vp_id true 
-				
-				ViewPanelManager.SetActiveViewPanel 2
-				viewport.setType #view_front
-				max tool zoomextents all
-				disp = NitrousGraphicsManager.GetActiveViewportSetting() 
-				disp.VisualStyleMode = #ConsistentColors 
-				ViewPanelManager.SetActiveViewPanel 1
-			)
-
-				
 			ViewPanelManager.SetActiveViewPanel 1
 			viewport.setLayout #layout_1
 			viewport.setType #view_persp_user
